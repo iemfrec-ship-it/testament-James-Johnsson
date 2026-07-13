@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Le Testament de James T. Johnsson</title>
+<style>
+:root{
+  --gold:#d4af37; --gold-light:#f4e5b2; --red:#8b0d1f; --red-light:#b31329;
+  --black:#0d0b0a; --black-2:#171313; --cream:#f5ecd8; --ok:#2e7d32; --bad:#b31329;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Georgia,'Times New Roman',serif;background:radial-gradient(circle at 50% 0%, #241a10 0%, var(--black) 70%);color:var(--cream);min-height:100vh;}
+.app{max-width:900px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column;position:relative;}
+.screen{display:none;flex:1;flex-direction:column;animation:fadein .35s ease;}
+.screen.active{display:flex;}
+@keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:8px 4px 16px;border-bottom:2px solid var(--gold);margin-bottom:16px;}
+.brand{font-size:1.05em;letter-spacing:2px;color:var(--gold);font-weight:bold;}
+.hud{display:flex;gap:10px;font-size:.9em;align-items:center;flex-wrap:wrap;}
+.hud span{background:var(--black-2);border:1px solid var(--gold);border-radius:20px;padding:4px 12px;}
+.hud .score{color:var(--gold-light);font-weight:bold;}
+.hud .timer{color:var(--red-light);font-weight:bold;}
+.hud .timer.warn{animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.card{background:linear-gradient(160deg,var(--black-2),#201914);border:1px solid var(--gold);border-radius:14px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.5);}
+h1{color:var(--gold);font-size:1.5em;margin-bottom:10px;text-align:center;}
+h2{color:var(--gold-light);font-size:1.2em;margin-bottom:12px;}
+p{line-height:1.6;margin-bottom:10px;}
+.center{text-align:center;}
+.muted{color:#c9bda0;font-size:.88em;}
+.btn{display:inline-block;background:linear-gradient(180deg,var(--gold-light),var(--gold));color:#2b1c05;border:none;padding:12px 26px;border-radius:30px;font-weight:bold;font-size:1em;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 12px rgba(0,0,0,.4);font-family:inherit;}
+.btn:active{transform:scale(.96);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn.secondary{background:transparent;border:1px solid var(--gold);color:var(--gold-light);}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;}
+input[type=text]{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--gold);background:#100d0b;color:var(--cream);font-size:1em;font-family:inherit;margin-bottom:6px;}
+textarea{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--gold);background:#100d0b;color:var(--cream);font-size:1em;font-family:inherit;}
+label{display:block;margin:12px 0 4px;color:var(--gold-light);font-size:.9em;}
+.id-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px;}
+.id-box{width:70px;text-align:center;text-transform:uppercase;font-size:1.2em;letter-spacing:2px;}
+.id-dash{color:var(--gold);font-size:1.4em;font-weight:bold;}
+.progress-track{height:8px;background:#241c14;border-radius:6px;overflow:hidden;margin:10px 0 18px;border:1px solid var(--gold);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--gold));transition:width .4s;}
+.qcm-question{font-size:1.1em;margin-bottom:16px;color:var(--gold-light);}
+.qcm-options{display:grid;gap:10px;}
+.qcm-opt{padding:14px;border-radius:10px;border:1px solid #4a3c25;background:#1c1712;cursor:pointer;font-size:1em;text-align:left;color:var(--cream);}
+.qcm-opt:hover{border-color:var(--gold);}
+.fb-sentence{font-size:1.1em;margin-bottom:8px;line-height:1.7;}
+.fb-input{width:150px;display:inline-block;padding:6px 8px;border-radius:6px;border:1px solid var(--gold);background:#100d0b;color:var(--cream);font-family:inherit;font-size:1em;text-align:center;}
+.xw-grid{display:grid;gap:2px;justify-content:center;margin:16px auto;}
+.xw-cell{width:32px;height:32px;background:#100d0b;border:1px solid #4a3c25;position:relative;}
+.xw-cell.active{background:#1c1712;}
+.xw-cell.blocked{background:#000;border:1px solid #000;}
+.xw-cell input{width:100%;height:100%;background:transparent;border:none;color:var(--cream);text-align:center;text-transform:uppercase;font-size:1em;font-family:inherit;}
+.xw-cell input:focus{outline:2px solid var(--gold);}
+.xw-cell input.cell-correct{color:#7ed99a;}
+.xw-cell input.cell-wrong{color:#ff8f8f;}
+.xw-num{position:absolute;top:0;left:2px;font-size:.5em;color:var(--gold);}
+.xw-clues{margin-top:16px;font-size:.88em;}
+.xw-clues div{margin-bottom:6px;}
+.testament-text{font-size:1.05em;line-height:2.1;}
+.testament-text .wrongword{color:var(--bad);font-weight:bold;}
+.testament-text input{width:110px;margin:0 4px;padding:4px 6px;border-radius:6px;border:1px solid var(--gold);background:#100d0b;color:var(--cream);font-family:inherit;text-align:center;}
+.stage-badge{display:inline-block;background:var(--red);color:var(--gold-light);padding:4px 14px;border-radius:20px;font-size:.78em;letter-spacing:1px;margin-bottom:12px;}
+.hint-box{background:#241c14;border-left:3px solid var(--gold);padding:10px 14px;border-radius:6px;font-size:.85em;margin-top:12px;color:#d9cba0;}
+.final-score{font-size:2.4em;color:var(--gold);text-align:center;margin:10px 0;font-weight:bold;}
+.final-rank{text-align:center;font-size:1.15em;color:var(--gold-light);margin-bottom:16px;}
+footer.pin-link{text-align:center;padding:6px;font-size:.75em;color:#5a4d38;cursor:pointer;}
+footer.credit{text-align:center;padding:10px 6px 2px;font-size:.8em;color:#8a7c5c;letter-spacing:.5px;}
+.role-btn{display:block;margin:14px auto 0;background:transparent;border:1px dashed #6b5c3c;color:#8a7c5c;padding:10px 20px;border-radius:30px;font-size:.85em;cursor:pointer;font-family:inherit;}
+.pdf-float{position:fixed;bottom:18px;right:18px;z-index:50;}
+.pdf-float button{border-radius:50px;padding:12px 18px;font-size:.9em;box-shadow:0 4px 16px rgba(0,0,0,.6);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- LOGIN -->
+  <div class="screen active" id="screen-login">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div></div>
+    <div class="card" style="margin:auto;max-width:420px;width:100%;">
+      <h1>Le Testament de<br>James T. Johnsson</h1>
+      <p class="center muted">Escape game — Prétérit des verbes irréguliers · ~30 minutes</p>
+      <label>Identifiant (2 lettres prénom - 2 lettres nom)</label>
+      <div class="id-row">
+        <input type="text" id="input-init1" class="id-box" maxlength="2" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="CA">
+        <span class="id-dash">-</span>
+        <input type="text" id="input-init2" class="id-box" maxlength="2" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="IE">
+      </div>
+      <label for="input-classe">Classe</label>
+      <input type="text" id="input-classe" placeholder="Ex : 1BAC3" autocapitalize="characters" autocorrect="off" spellcheck="false">
+      <label for="input-code">Code d'accès</label>
+      <input type="text" id="input-code" placeholder="Code fourni par le professeur" autocapitalize="characters" autocorrect="off" spellcheck="false">
+      <div class="btn-row"><button class="btn" onclick="startGame()">Entrer au casino</button></div>
+      <p class="muted center" id="login-error" style="color:var(--bad);"></p>
+      <button class="role-btn" onclick="showScreen('screen-rgpd')">🔒 Protection des données (RGPD)</button>
+    </div>
+    <footer class="pin-link" onclick="openTeacher()">Espace enseignant</footer>
+    <footer class="credit">Créé par C. Iemfre</footer>
+  </div>
+
+  <!-- RGPD -->
+  <div class="screen" id="screen-rgpd">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div></div>
+    <div class="card" style="margin:auto;max-width:560px;">
+      <h2>RGPD : Protection des données personnelles</h2>
+      <p>Cette application est un outil pédagogique développé pour un usage en classe.</p>
+      <p>- Aucune donnée n'est transmise à un serveur externe : toutes les informations (identifiant, réponses, score) restent uniquement dans la mémoire de votre navigateur, le temps de la partie en cours.</p>
+      <p>- Aucun cookie tiers, aucun traceur publicitaire, aucun appel à une API externe n'est utilisé.</p>
+      <p>- Les seules données saisies sont : les deux premières lettres de votre prénom et de votre nom (utilisées uniquement pour générer un identifiant au format XX-YY, sans jamais collecter votre identité complète), ainsi que vos réponses aux exercices.</p>
+      <p>- Ces données ne sont jamais sauvegardées : elles disparaissent automatiquement si vous rechargez ou fermez la page. Pensez à télécharger votre PDF de résultats avant de quitter l'application.</p>
+      <p>- Le PDF généré est créé localement dans votre navigateur ; il n'est envoyé à personne automatiquement. C'est à vous de le transmettre à votre professeur.</p>
+      <div class="btn-row"><button class="btn secondary" onclick="showScreen('screen-login')">Retour</button></div>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="screen" id="screen-intro">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div><div class="hud"><span id="hud-id-intro"></span><span id="hud-classe-intro"></span></div></div>
+    <div class="card" style="margin:auto;max-width:560px;">
+      <h1>Le Testament</h1>
+      <p>James "The Legend" Johnsson, le joueur le plus mythique du siècle, a disparu il y a 30 ans après avoir remporté — puis perdu — plusieurs fortunes.</p>
+      <p>Pour hériter du coffre final, il faut prouver que l'on connaît <strong>toute son histoire</strong>, racontée au prétérit, à travers 5 chapitres.</p>
+      <p class="muted">Chaque chapitre offre <strong>3 tentatives</strong>. Si le chapitre n'est pas réussi à 100% après 3 essais, tu passes automatiquement au suivant. Le chronomètre ne s'arrête jamais. <strong>30 minutes</strong> au total.</p>
+      <div class="btn-row"><button class="btn" onclick="goToChapter(1)">Commencer l'histoire</button></div>
+    </div>
+  </div>
+
+  <!-- CHAPTER 1 : QCM -->
+  <div class="screen" id="screen-ch1">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div><div class="hud"><span class="score" id="hud-score-1">0 pts</span><span class="timer" id="hud-timer-1">30:00</span></div></div>
+    <div class="card">
+      <span class="stage-badge">CHAPITRE 1 — LA JEUNESSE</span>
+      <h2>Le premier pari</h2>
+      <div class="progress-track"><div class="progress-fill" id="ch1-progress" style="width:0%"></div></div>
+      <div class="qcm-question" id="ch1-question"></div>
+      <div class="qcm-options" id="ch1-options"></div>
+      <div class="hint-box">💡 Choisis la bonne forme du prétérit. Ta réponse est enregistrée, tu ne sauras si le chapitre est réussi qu'à la fin.</div>
+    </div>
+  </div>
+
+  <!-- CHAPTER 2 : SPELLING MCQ -->
+  <div class="screen" id="screen-ch2">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div><div class="hud"><span class="score" id="hud-score-2">0 pts</span><span class="timer" id="hud-timer-2">30:00</span></div></div>
+    <div class="card">
+      <span class="stage-badge">CHAPITRE 2 — LES GRANDS GAINS</span>
+      <h2>Chasse aux erreurs</h2>
+      <div class="progress-track"><div class="progress-fill" id="ch2-progress" style="width:0%"></div></div>
+      <div class="qcm-question" id="ch2-question"></div>
+      <div class="qcm-options" id="ch2-options"></div>
+      <div class="hint-box">💡 Une seule orthographe est correcte.</div>
+    </div>
+  </div>
+
+  <!-- CHAPTER 3 : FILL BLANK -->
+  <div class="screen" id="screen-ch3">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div><div class="hud"><span class="score" id="hud-score-3">0 pts</span><span class="timer" id="hud-timer-3">30:00</span></div></div>
+    <div class="card">
+      <span class="stage-badge">CHAPITRE 3 — LES PERTES</span>
+      <h2>La nuit où tout a basculé</h2>
+      <div class="progress-track"><div class="progress-fill" id="ch3-progress" style="width:0%"></div></div>
+      <div class="fb-sentence" id="ch3-sentence"></div>
+      <input type="text" class="fb-input" id="ch3-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <div class="btn-row"><button class="btn" id="ch3-next" onclick="ch3Next()">Suivant</button></div>
+    </div>
+  </div>
+
+  <!-- CHAPTER 4 : CROSSWORD -->
+  <div class="screen" id="screen-ch4">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div><div class="hud"><span class="score" id="hud-score-4">0 pts</span><span class="timer" id="hud-timer-4">30:00</span></div></div>
+    <div class="card">
+      <span class="stage-badge">CHAPITRE 4 — LE GRAND RETOUR</span>
+      <h2>Mots croisés du destin</h2>
+      <div class="xw-grid" id="xw-grid"></div>
+      <div class="xw-clues" id="xw-clues"></div>
+      <div class="btn-row"><button class="btn" onclick="validateCh4()">Valider la grille</button></div>
+      <div class="hint-box">💡 Une case incorrecte se vide automatiquement : resaisis la bonne lettre. 2 validations maximum.</div>
+    </div>
+  </div>
+
+  <!-- CHAPTER 5 : TESTAMENT CORRECTION -->
+  <div class="screen" id="screen-ch5">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div><div class="hud"><span class="score" id="hud-score-5">0 pts</span><span class="timer" id="hud-timer-5">30:00</span></div></div>
+    <div class="card">
+      <span class="stage-badge">CHAPITRE 5 — LE TESTAMENT RETROUVÉ</span>
+      <h2>Corrige les erreurs</h2>
+      <p class="muted">Le texte ci-dessous contient 10 erreurs de prétérit (mots barrés). Saisis la bonne forme dans chaque case.</p>
+      <div class="testament-text" id="ch5-text"></div>
+      <div class="btn-row"><button class="btn" onclick="validateCh5()">Valider le testament</button></div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="screen" id="screen-summary">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div></div>
+    <div class="card" style="margin:auto;max-width:560px;">
+      <h1>Ton résumé de l'histoire</h1>
+      <p class="muted">Écris un paragraphe en anglais pour résumer l'histoire de James T. Johnsson, en utilisant le prétérit. Voici des mots-clés dans l'ordre chronologique pour t'aider à te souvenir de l'histoire :</p>
+      <div class="hint-box">
+        1. young James - first night at the casino - small risk<br>
+        2. first big win - fame - fortune - grand life<br>
+        3. one bad night - huge losses - debts - disappearance<br>
+        4. years away - forgiveness - lesson learned<br>
+        5. return to the casino - final bet - legend reborn<br>
+        6. vault opened - testament revealed
+      </div>
+      <p class="muted">Ce texte ne sera pas corrigé automatiquement — il sera inclus tel quel dans ton PDF final, pour ton professeur.</p>
+      <textarea id="summary-textarea" rows="8" placeholder="James T. Johnsson went to..."></textarea>
+      <div class="btn-row"><button class="btn" onclick="finishFromSummary()">Terminer l'aventure</button></div>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div class="screen" id="screen-final">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div></div>
+    <div class="card" style="margin:auto;max-width:520px;">
+      <h1>💰 Le Coffre est Ouvert</h1>
+      <p class="center" id="final-name"></p>
+      <div class="final-score" id="final-score">0 pts</div>
+      <div class="final-rank" id="final-rank"></div>
+      <p class="muted center">James T. Johnsson vous lègue son histoire. Bravo, vous avez maîtrisé le prétérit irrégulier !</p>
+      <p class="muted center">📩 N'oublie pas de transmettre ton PDF à ton professeur via la messagerie Ecole Directe.</p>
+      <div class="btn-row">
+        <button class="btn" onclick="downloadPdf()">📄 Télécharger le PDF</button>
+        <button class="btn secondary" onclick="location.reload()">Rejouer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIME UP -->
+  <div class="screen" id="screen-timeup">
+    <div class="topbar"><div class="brand">🎰 JOHNSSON'S CASINO</div></div>
+    <div class="card" style="margin:auto;max-width:520px;">
+      <h1>⏳ Temps écoulé</h1>
+      <p class="center" id="timeup-name"></p>
+      <div class="final-score" id="timeup-score">0 pts</div>
+      <p class="muted center">Le temps imparti (30 minutes) est terminé. Voici ta progression.</p>
+      <p class="muted center">📩 N'oublie pas de transmettre ton PDF à ton professeur via la messagerie Ecole Directe.</p>
+      <div class="btn-row">
+        <button class="btn" onclick="downloadPdf()">📄 Télécharger le PDF</button>
+        <button class="btn secondary" onclick="location.reload()">Recommencer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEACHER -->
+  <div class="screen" id="screen-teacher">
+    <div class="topbar"><div class="brand">🎰 ESPACE ENSEIGNANT</div></div>
+    <div class="card" style="margin:auto;max-width:420px;width:100%;" id="teacher-pin-box">
+      <h2>Code PIN</h2>
+      <input type="text" id="teacher-pin" placeholder="PIN" maxlength="4" inputmode="numeric">
+      <div class="btn-row">
+        <button class="btn" onclick="checkPin()">Valider</button>
+        <button class="btn secondary" onclick="closeTeacher()">Retour</button>
+      </div>
+      <p class="muted center" id="pin-error" style="color:var(--bad);"></p>
+    </div>
+    <div class="card" id="teacher-dashboard" style="display:none;margin-top:16px;">
+      <h2>Code d'accès élève</h2>
+      <p class="center" style="font-size:1.4em;color:var(--gold);letter-spacing:2px;">VERBES2627</p>
+      <div class="btn-row"><button class="btn secondary" onclick="closeTeacher()">Retour</button></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="pdf-float" id="pdf-float" style="display:none;">
+  <button class="btn" onclick="downloadPdf()">📄 PDF</button>
+</div>
+
+<script>
+const ACCESS_CODE = "VERBES2627";
+const TEACHER_PIN = "0504";
+
+/* ============ DATA BANKS ============ */
+const CH1_A = [
+ {sentence:"When he was young, he ___ (go) to the casino for the first time.", options:["goed","went","gone","going"], answer:"went"},
+ {sentence:"He ___ (have) only ten dollars in his pocket.", options:["haved","had","have","having"], answer:"had"},
+ {sentence:"He ___ (do) something no one expected.", options:["doed","did","done","do"], answer:"did"},
+ {sentence:"He ___ (make) a bold bet on his first night.", options:["maked","made","make","making"], answer:"made"},
+ {sentence:"He ___ (say) \"all in\" with a smile.", options:["sayed","said","says","saying"], answer:"said"},
+ {sentence:"Fortune ___ (come) to him that night.", options:["comed","came","come","coming"], answer:"came"},
+ {sentence:"He ___ (see) the wheel stop on his number.", options:["seed","saw","seen","seeing"], answer:"saw"},
+ {sentence:"He ___ (know) exactly what to do next.", options:["knowed","knew","known","knowing"], answer:"knew"},
+ {sentence:"He ___ (take) a huge risk that night.", options:["taked","took","taken","taking"], answer:"took"},
+ {sentence:"He ___ (give) his last coin to the dealer.", options:["gived","gave","given","giving"], answer:"gave"},
+ {sentence:"He ___ (feel) invincible for the first time.", options:["feeled","felt","feel","feeling"], answer:"felt"},
+ {sentence:"He ___ (think) his luck would never end.", options:["thinked","thought","think","thinking"], answer:"thought"}
+];
+const CH1_B = [
+ {sentence:"As a teenager, he ___ (find) an old deck of cards in his attic.", options:["finded","found","finding","find"], answer:"found"},
+ {sentence:"His grandfather ___ (tell) him the rules of poker.", options:["telled","told","telling","tell"], answer:"told"},
+ {sentence:"By sixteen, he ___ (become) obsessed with the game.", options:["becomed","became","becoming","become"], answer:"became"},
+ {sentence:"He ___ (leave) school early to play his first tournament.", options:["leaved","left","leaving","leave"], answer:"left"},
+ {sentence:"He ___ (win) his very first hand that day.", options:["winned","won","winning","win"], answer:"won"},
+ {sentence:"He also ___ (lose) a few games, but he kept smiling.", options:["losed","lost","losing","lose"], answer:"lost"},
+ {sentence:"He ___ (meet) other young players at the local club.", options:["meeted","met","meeting","meet"], answer:"met"},
+ {sentence:"He ___ (buy) his first deck of cards with his savings.", options:["buyed","bought","buying","buy"], answer:"bought"},
+ {sentence:"His passion for cards ___ (begin) that summer.", options:["beginned","began","beginning","begin"], answer:"began"},
+ {sentence:"He ___ (bring) his lucky deck everywhere he went.", options:["bringed","brought","bringing","bring"], answer:"brought"},
+ {sentence:"A teacher almost ___ (catch) him playing cards in class.", options:["catched","caught","catching","catch"], answer:"caught"},
+ {sentence:"He ___ (write) his first diary entry about the game.", options:["writed","wrote","writing","write"], answer:"wrote"}
+];
+const CH1_C = [
+ {sentence:"He ___ (be) the youngest player at the table that night.", options:["beed","was","been","being"], answer:"was"},
+ {sentence:"He ___ (become) known as a rising star in the casino.", options:["becomed","became","become","becoming"], answer:"became"},
+ {sentence:"A rumor ___ (blow) through the casino about his talent.", options:["blowed","blew","blown","blowing"], answer:"blew"},
+ {sentence:"He ___ (bring) nothing but confidence to his first big game.", options:["bringed","brought","bring","bringing"], answer:"brought"},
+ {sentence:"Nobody thought he ___ (can) beat the reigning champion.", options:["can","could","coulded","canned"], answer:"could"},
+ {sentence:"He ___ (catch) everyone's attention with his first bold move.", options:["catched","caught","catch","catching"], answer:"caught"},
+ {sentence:"He ___ (meet) the casino owner for the very first time.", options:["meeted","met","meet","meeting"], answer:"met"},
+ {sentence:"He ___ (fight) hard to keep his seat at the table.", options:["fighted","fought","fight","fighting"], answer:"fought"},
+ {sentence:"He ___ (make) a name for himself that very night.", options:["maked","made","make","making"], answer:"made"},
+ {sentence:"He ___ (lose) his nervousness after that first win.", options:["losed","lost","lose","losing"], answer:"lost"}
+];
+
+const CH2_A = [
+ {sentence:"He ___ (speak) with confidence at the high-stakes table.", options:["spoke","spook","spoked","speaked"], answer:"spoke"},
+ {sentence:"He ___ (drive) straight to the casino after his big win.", options:["driven","drove","droved","drived"], answer:"drove"},
+ {sentence:"He ___ (wear) his lucky ring every night.", options:["weared","worn","wored","wore"], answer:"wore"},
+ {sentence:"He ___ (hear) the crowd cheering his name.", options:["heared","heard","hird","hurd"], answer:"heard"},
+ {sentence:"His reputation ___ (grow) with every victory.", options:["graw","growed","grew","grewd"], answer:"grew"},
+ {sentence:"He ___ (sing) with joy after his biggest win.", options:["song","sung","singed","sang"], answer:"sang"},
+ {sentence:"He ___ (hold) the winning card high in the air.", options:["holded","hald","helded","held"], answer:"held"},
+ {sentence:"He ___ (stand) at the center of the room, celebrating.", options:["stod","stoded","standed","stood"], answer:"stood"},
+ {sentence:"Everyone ___ (understand) that he was truly gifted.", options:["understod","understund","understood","understanded"], answer:"understood"},
+ {sentence:"He ___ (sit) at the VIP table for the first time.", options:["sited","sitted","sat","satted"], answer:"sat"},
+ {sentence:"He ___ (run) straight to tell his family the news.", options:["ran","runed","ranned","raned"], answer:"ran"},
+ {sentence:"His fortune ___ (fall) into place perfectly that night.", options:["fell","falled","felled","falling"], answer:"fell"}
+];
+const CH2_B = [
+ {sentence:"He ___ (break) the casino's biggest record that night.", options:["broke","brook","broked","breaked"], answer:"broke"},
+ {sentence:"He ___ (choose) to play the riskiest table in the room.", options:["chosed","chose","chosen","chost"], answer:"chose"},
+ {sentence:"He never ___ (forget) the thrill of that first big win.", options:["forgeted","forgut","forgot","forgat"], answer:"forgot"},
+ {sentence:"He ___ (keep) every winning ticket as a souvenir.", options:["kept","keept","keeped","keepd"], answer:"kept"},
+ {sentence:"He ___ (teach) himself every trick of the game.", options:["taught","tought","teacht","taugh"], answer:"taught"},
+ {sentence:"He ___ (spend) hours celebrating his victory.", options:["spend","spended","spendt","spent"], answer:"spent"},
+ {sentence:"He ___ (ride) home in a brand new car that night.", options:["rude","rade","rode","ridden"], answer:"rode"},
+ {sentence:"News of his win ___ (fly) around the whole city.", options:["flaw","few","flow","flew"], answer:"flew"},
+ {sentence:"He ___ (throw) a huge party for all his friends.", options:["threw","threwn","thrown","thraw"], answer:"threw"},
+ {sentence:"The winning bell ___ (ring) for almost a minute.", options:["ringed","rung","rong","rang"], answer:"rang"},
+ {sentence:"He ___ (swim) in champagne, quite literally, that night.", options:["swam","swom","swum","swimmed"], answer:"swam"},
+ {sentence:"He ___ (wake) up the next day, still a champion.", options:["wake","woken","wokken","woke"], answer:"woke"}
+];
+const CH2_C = [
+ {sentence:"He ___ (prove) his talent in front of everyone that night.", options:["proved","provedd","provd","prooved"], answer:"proved"},
+ {sentence:"He ___ (run) straight to the high-stakes table without hesitation.", options:["ran","run","runned","rann"], answer:"ran"},
+ {sentence:"He never ___ (quit) even after his worst losses.", options:["quit","quitted","quited","quitt"], answer:"quit"},
+ {sentence:"He ___ (put) his last chip on the table.", options:["put","putted","puted","putt"], answer:"put"},
+ {sentence:"He ___ (get) a second chance he never expected.", options:["got","get","getted","gott"], answer:"got"},
+ {sentence:"The casino ___ (shut) its doors right after his historic win.", options:["shut","shutted","shuted","shutt"], answer:"shut"},
+ {sentence:"He ___ (sing) an old victory song under his breath.", options:["sang","sing","singed","sanng"], answer:"sang"},
+ {sentence:"He ___ (steal) the show with his boldest move yet.", options:["stole","steal","stealed","stoled"], answer:"stole"},
+ {sentence:"He ___ (tell) his story to anyone who would listen.", options:["told","tell","telled","toldd"], answer:"told"},
+ {sentence:"He ___ (throw) his hat in the air in celebration.", options:["threw","throw","throwed","threww"], answer:"threw"}
+];
+
+const CH3_A = [
+ {sentence:"He ___ (read) his fortune in the cards, but ignored the warning.", answer:"read"},
+ {sentence:"He ___ (eat) nothing all day, worried about his debts.", answer:"ate"},
+ {sentence:"He ___ (drink) too much the night he lost everything.", answer:"drank"},
+ {sentence:"He ___ (fight) to keep his last chips at the table.", answer:"fought"},
+ {sentence:"He ___ (pay) his debts with his last savings.", answer:"paid"},
+ {sentence:"He ___ (send) a desperate letter asking for help.", answer:"sent"},
+ {sentence:"He ___ (sell) his car to cover his losses.", answer:"sold"},
+ {sentence:"He ___ (shoot) one last desperate look at the wheel.", answer:"shot"},
+ {sentence:"He barely ___ (sleep) after that terrible night.", answer:"slept"},
+ {sentence:"He ___ (build) his whole fortune on borrowed money.", answer:"built"},
+ {sentence:"A friend ___ (lend) him money he could never repay.", answer:"lent"},
+ {sentence:"That night ___ (lead) him to rock bottom.", answer:"led"}
+];
+const CH3_B = [
+ {sentence:"He ___ (bear) the weight of his losses alone.", answer:"bore"},
+ {sentence:"Doubt ___ (creep) into his mind every night.", answer:"crept"},
+ {sentence:"He almost ___ (flee) the city after that terrible loss.", answer:"fled"},
+ {sentence:"Debt slowly ___ (grind) him down.", answer:"ground"},
+ {sentence:"He ___ (kneel) before the empty table, begging for one more chance.", answer:"knelt"},
+ {sentence:"He desperately ___ (seek) a way to recover his fortune.", answer:"sought"},
+ {sentence:"He ___ (mistake) confidence for real luck.", answer:"mistook"},
+ {sentence:"Nobody ___ (foresee) how badly the night would end.", answer:"foresaw"},
+ {sentence:"He ___ (overhear) two dealers laughing at his misfortune.", answer:"overheard"},
+ {sentence:"He barely ___ (withstand) the shame of that defeat.", answer:"withstood"},
+ {sentence:"He ___ (redo) his calculations, hoping for a different result.", answer:"redid"},
+ {sentence:"He never fully ___ (repay) the debts from that night.", answer:"repaid"}
+];
+const CH3_C = [
+ {sentence:"He ___ (speak) to no one for days after that final loss.", answer:"spoke"},
+ {sentence:"He ___ (wear) the same clothes for a week, unable to move on.", answer:"wore"},
+ {sentence:"He ___ (write) one last letter before disappearing completely.", answer:"wrote"},
+ {sentence:"He ___ (win) nothing that entire final night.", answer:"won"},
+ {sentence:"Life ___ (teach) him a harsh lesson that year.", answer:"taught"},
+ {sentence:"He ___ (take) one last desperate risk before it all ended.", answer:"took"},
+ {sentence:"He ___ (swim) in debt for years after that night.", answer:"swam"},
+ {sentence:"He ___ (steal) away quietly, unseen by anyone.", answer:"stole"},
+ {sentence:"He barely ___ (spell) his own name on the last check he signed.", answer:"spelt"},
+ {sentence:"His car ___ (speed) away from the ruins of his old life.", answer:"sped"}
+];
+
+const CH4_WORDS_A = [
+ {word:"FROZE",  clue:"freeze → the room ___ silent when he sat down."},
+ {word:"STRUCK", clue:"strike → luck ___ him one more time."},
+ {word:"HUNG",   clue:"hang → silence ___ over the table."},
+ {word:"BENT",   clue:"bend → he ___ the rules just once."},
+ {word:"LIT",    clue:"light → he ___ a cigar to celebrate."},
+ {word:"FED",    clue:"feed → success ___ his confidence."},
+ {word:"BRED",   clue:"breed → the story ___ new legends."},
+ {word:"SWEPT",  clue:"sweep → he ___ the table clean."},
+ {word:"LAY",    clue:"lie → the cards ___ face down."},
+ {word:"LAID",   clue:"lay → he ___ down his final hand."},
+ {word:"SWUNG",  clue:"swing → the doors ___ open."},
+ {word:"WEPT",   clue:"weep → some say he ___ with joy."}
+];
+const CH4_WORDS_B = [
+ {word:"SANK",  clue:"sink → his heart ___ when he saw the cards."},
+ {word:"SLID",  clue:"slide → the chips ___ across the table."},
+ {word:"STUCK", clue:"stick → he ___ to his plan until the end."},
+ {word:"SPUN",  clue:"spin → the wheel ___ one final time."},
+ {word:"STUNG", clue:"sting → the loss ___ for weeks."},
+ {word:"BLED",  clue:"bleed → his savings ___ away slowly."},
+ {word:"SHRANK",clue:"shrink → his fortune ___ overnight."},
+ {word:"WOVE",  clue:"weave → he ___ a new story for himself."},
+ {word:"FLUNG", clue:"fling → he ___ the dice across the felt."},
+ {word:"CLUNG", clue:"cling → hope ___ to him until the end."},
+ {word:"SPAT",  clue:"spit → he ___ on his hands for luck."},
+ {word:"DOVE",  clue:"dive → he ___ back into the game headfirst."}
+];
+
+const CH5_A = [
+ {t:"On the night everything changed, James finally "},{e:"getted", c:"got"},{t:" the one thing he wanted most: respect. He "},
+ {e:"forgived", c:"forgave"},{t:" every player who had betrayed him over the years. To him, winning never really "},
+ {e:"meaned", c:"meant"},{t:" as much as people thought. His legend only "},{e:"rised", c:"rose"},
+ {t:" because of that single night at the tables. Slowly, everyone "},{e:"understanded", c:"understood"},
+ {t:" why he never gave up. He always "},{e:"dealed", c:"dealt"},{t:" honestly with every opponent. That night, he "},
+ {e:"is", c:"was"},{t:" the last man standing in the whole casino. In an instant, he "},{e:"becomed", c:"became"},
+ {t:" a legend across the city. Fortune finally "},{e:"comed", c:"came"},{t:" back to him after all those years. Finally, he "},
+ {e:"breaked", c:"broke"},{t:" every rule the casino had ever known."}
+];
+const CH5_B = [
+ {t:"Long before that final night, James "},{e:"goed", c:"went"},{t:" from town to town, searching for the perfect table. Back then, nobody "},
+ {e:"can", c:"could"},{t:" have predicted his rise. His first fortune "},{e:"falled", c:"fell"},
+ {t:" apart within a single year. Still, he "},{e:"undertaked", c:"undertook"},{t:" the boldest comeback anyone had ever seen. He "},
+ {e:"keeped", c:"kept"},{t:" every promise he ever made to his friends. When trouble came, he calmly "},{e:"withdrawed", c:"withdrew"},
+ {t:" from the table without a word. The old owner had once "},{e:"forbidded", c:"forbade"},{t:" him from entering the casino at all. James simply "},
+ {e:"sayed", c:"said"},{t:" nothing and walked away. Later, he "},{e:"sended", c:"sent"},{t:" a letter that changed everything."}
+];
+
+/* ============ POINTS ============ */
+const PTS = {ch1:10, ch2:10, ch3:10, ch4:15, ch5:15};
+const MAX_BASE = 12*PTS.ch1 + 12*PTS.ch2 + 12*PTS.ch3 + 12*PTS.ch4 + 10*PTS.ch5;
+
+/* ============ STATE ============ */
+function freshChapterLog(){ return {items:[], status:"non commencé", startTime:null, endTime:null, timeSpentSec:null}; }
+let state = {
+  studentId:"", classe:"", score:0, totalSeconds:30*60, timerInterval:null,
+  chapterDone:{1:false,2:false,3:false,4:false,5:false},
+  attempt:{1:0,2:0,3:0,4:0,5:0},
+  chapterLog:{1:freshChapterLog(),2:freshChapterLog(),3:freshChapterLog(),4:freshChapterLog(),5:freshChapterLog()},
+  summaryText:""
+};
+
+/* ============ HELPERS ============ */
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  const pdfBtn=document.getElementById("pdf-float");
+  pdfBtn.style.display = (id==="screen-login"||id==="screen-teacher"||id==="screen-rgpd") ? "none" : "block";
+}
+function updateHud(){
+  const m=Math.floor(state.totalSeconds/60).toString().padStart(2,"0");
+  const s=(state.totalSeconds%60).toString().padStart(2,"0");
+  const timeStr=m+":"+s; const warn=state.totalSeconds<60;
+  [1,2,3,4,5].forEach(n=>{
+    const sc=document.getElementById("hud-score-"+n), tm=document.getElementById("hud-timer-"+n);
+    if(sc) sc.textContent=state.score+" pts";
+    if(tm){tm.textContent=timeStr;tm.classList.toggle("warn",warn);}
+  });
+}
+function startTimer(){
+  state.timerInterval=setInterval(()=>{
+    state.totalSeconds--; updateHud();
+    if(state.totalSeconds<=0){clearInterval(state.timerInterval); timeUp();}
+  },1000);
+}
+function timeUp(){
+  document.getElementById("timeup-name").textContent = "ID : "+state.studentId+" · Classe : "+state.classe;
+  document.getElementById("timeup-score").textContent = state.score+" pts";
+  showScreen("screen-timeup");
+}
+
+/* ============ LOGIN ============ */
+["input-init1","input-init2"].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener("input", ()=>{ el.value = el.value.replace(/[^a-zA-Z]/g,"").toUpperCase().slice(0,2); });
+});
+function startGame(){
+  const i1 = document.getElementById("input-init1").value.trim().toUpperCase();
+  const i2 = document.getElementById("input-init2").value.trim().toUpperCase();
+  const classe = document.getElementById("input-classe").value.trim();
+  const code = document.getElementById("input-code").value.trim().toUpperCase();
+  if(!/^[A-Z]{2}$/.test(i1) || !/^[A-Z]{2}$/.test(i2)){
+    document.getElementById("login-error").textContent="Merci de saisir exactement 2 lettres dans chaque case.";
+    return;
+  }
+  if(!classe){document.getElementById("login-error").textContent="Merci d'indiquer ta classe.";return;}
+  if(code!==ACCESS_CODE){document.getElementById("login-error").textContent="Code d'accès incorrect.";return;}
+  state.studentId = i1+"-"+i2;
+  state.classe = classe;
+  document.getElementById("hud-id-intro").textContent="ID : "+state.studentId;
+  document.getElementById("hud-classe-intro").textContent="Classe : "+state.classe;
+  showScreen("screen-intro");
+}
+
+/* ============ CHAPTER TIMING ============ */
+function ensureChapterStart(n){
+  if(!state.chapterLog[n].startTime) state.chapterLog[n].startTime = Date.now();
+}
+function endChapterTimer(n){
+  const log = state.chapterLog[n];
+  if(log.startTime && !log.endTime){
+    log.endTime = Date.now();
+    log.timeSpentSec = Math.round((log.endTime-log.startTime)/1000);
+  }
+}
+
+/* ============ CHAPTER NAV ============ */
+function goToChapter(n){
+  if(!state.timerInterval) startTimer();
+  if(n===1){ensureChapterStart(1);showScreen("screen-ch1");loadQcmChapter(1, [CH1_A, CH1_B, CH1_C]);}
+  else if(n===2){ensureChapterStart(2);showScreen("screen-ch2");loadQcmChapter(2, [CH2_A, CH2_B, CH2_C]);}
+  else if(n===3){ensureChapterStart(3);showScreen("screen-ch3");loadCh3();}
+  else if(n===4){ensureChapterStart(4);showScreen("screen-ch4");loadCh4();}
+  else if(n===5){ensureChapterStart(5);showScreen("screen-ch5");loadCh5();}
+  else if(n===6){showScreen("screen-summary");}
+  updateHud();
+}
+function chapterFailed(n, loaderFn, maxTries){
+  const cap = maxTries || 3;
+  state.attempt[n]++;
+  if(state.attempt[n] >= cap){
+    state.chapterLog[n].status = "non réussi ("+cap+" tentatives)";
+    endChapterTimer(n);
+    alert("Tu as atteint le nombre maximum de tentatives ("+cap+") pour ce chapitre. Passage au chapitre suivant.");
+    goToChapter(n+1);
+    return;
+  }
+  alert("Il reste des erreurs. Nouvelle série de phrases et de verbes — tentative "+(state.attempt[n]+1)+"/"+cap+". Le chrono continue !");
+  loaderFn();
+}
+function chapterPassed(n, points){
+  state.chapterDone[n]=true;
+  state.chapterLog[n].status = "réussi";
+  endChapterTimer(n);
+  state.score+=points;
+  updateHud();
+  goToChapter(n+1);
+}
+
+/* ============ GENERIC QCM ENGINE (Chapters 1 & 2) ============ */
+let qcmState = {};
+function loadQcmChapter(n, banks){
+  const bank = banks[Math.min(state.attempt[n], banks.length-1)];
+  qcmState[n] = {bank, order:shuffle(bank.map((_,i)=>i)), index:0, answers:[]};
+  renderQcmChapter(n, banks);
+}
+function renderQcmChapter(n, banks){
+  const st = qcmState[n];
+  document.getElementById("ch"+n+"-progress").style.width = (st.index/st.bank.length*100)+"%";
+  if(st.index >= st.bank.length){
+    const itemsLog = st.order.map((bankIdx,i)=>{
+      const q = st.bank[bankIdx];
+      const userAns = st.answers[i];
+      return {label:q.sentence, userAnswer:userAns, correctAnswer:q.answer, isCorrect:userAns===q.answer};
+    });
+    state.chapterLog[n].items = itemsLog;
+    const correctCount = itemsLog.filter(it=>it.isCorrect).length;
+    const pts = n===1 ? PTS.ch1 : PTS.ch2;
+    if(correctCount===st.bank.length){ chapterPassed(n, st.bank.length*pts); }
+    else { chapterFailed(n, ()=>loadQcmChapter(n, banks)); }
+    return;
+  }
+  const q = st.bank[st.order[st.index]];
+  document.getElementById("ch"+n+"-question").textContent = q.sentence;
+  const optsEl = document.getElementById("ch"+n+"-options");
+  optsEl.innerHTML="";
+  shuffle(q.options).forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.className="qcm-opt"; btn.textContent=opt;
+    btn.onclick=()=>{ st.answers.push(opt); st.index++; renderQcmChapter(n, banks); };
+    optsEl.appendChild(btn);
+  });
+}
+
+/* ============ CHAPTER 3 : FILL BLANK ============ */
+let ch3State={order:[],index:0,answers:[]};
+function loadCh3(){
+  const banks = [CH3_A, CH3_B, CH3_C];
+  const bank = banks[Math.min(state.attempt[3], banks.length-1)];
+  ch3State.bank=bank; ch3State.order=shuffle(bank.map((_,i)=>i)); ch3State.index=0; ch3State.answers=[];
+  renderCh3();
+}
+function renderCh3(){
+  document.getElementById("ch3-progress").style.width = (ch3State.index/ch3State.bank.length*100)+"%";
+  if(ch3State.index >= ch3State.bank.length){
+    const itemsLog = ch3State.order.map((bankIdx,i)=>{
+      const item = ch3State.bank[bankIdx];
+      const userAns = ch3State.answers[i];
+      return {label:item.sentence, userAnswer:userAns, correctAnswer:item.answer, isCorrect: userAns.trim().toLowerCase()===item.answer};
+    });
+    state.chapterLog[3].items = itemsLog;
+    const correctCount = itemsLog.filter(it=>it.isCorrect).length;
+    if(correctCount===ch3State.bank.length){ chapterPassed(3, 12*PTS.ch3); }
+    else { chapterFailed(3, loadCh3); }
+    return;
+  }
+  const item = ch3State.bank[ch3State.order[ch3State.index]];
+  const parts = item.sentence.split("___");
+  document.getElementById("ch3-sentence").innerHTML = parts[0]+"______"+parts[1];
+  const input = document.getElementById("ch3-input");
+  input.value=""; input.focus();
+}
+function ch3Next(){
+  const val = document.getElementById("ch3-input").value.trim();
+  if(!val){ alert("Complète le blanc avant de continuer."); return; }
+  ch3State.answers.push(val);
+  ch3State.index++;
+  renderCh3();
+}
+
+/* ============ CHAPTER 4 : CROSSWORD (auto layout, in-place correction, 3 tries) ============ */
+let xwPlacement = null;
+let xwCells = {};
+function generateCrossword(words){
+  const sorted = words.slice().sort((a,b)=>b.word.length-a.word.length);
+  const placed=[]; const cellMap={};
+  function canPlace(word,row,col,dir){
+    for(let i=0;i<word.length;i++){
+      const r=dir==="h"?row:row+i, c=dir==="h"?col+i:col;
+      const key=r+","+c;
+      if(cellMap[key]!==undefined && cellMap[key]!==word[i]) return false;
+    }
+    return true;
+  }
+  function place(word,row,col,dir){
+    for(let i=0;i<word.length;i++){
+      const r=dir==="h"?row:row+i, c=dir==="h"?col+i:col;
+      cellMap[r+","+c]=word[i];
+    }
+    placed.push({word,row,col,dir});
+  }
+  place(sorted[0].word,0,0,"h");
+  function rowIsEmpty(row){
+    return !Object.keys(cellMap).some(key => Number(key.split(",")[0]) === row);
+  }
+  let fallbackRow=2;
+  for(let idx=1;idx<sorted.length;idx++){
+    const w=sorted[idx].word;
+    let best=null;
+    outer:
+    for(const p of placed){
+      for(let pi=0;pi<p.word.length;pi++){
+        const letter=p.word[pi];
+        for(let wi=0;wi<w.length;wi++){
+          if(w[wi]===letter){
+            const dir = p.dir==="h" ? "v" : "h";
+            let row,col;
+            if(p.dir==="h"){ row=p.row-wi; col=p.col+pi; } else { row=p.row+pi; col=p.col-wi; }
+            if(canPlace(w,row,col,dir)){ best={row,col,dir}; break outer; }
+          }
+        }
+      }
+    }
+    if(best){
+      place(w,best.row,best.col,best.dir);
+    } else {
+      // Fallback: give this word an entirely empty row of its own, so it can
+      // never silently share a row with an unrelated word (no phantom gaps).
+      let safeRow = fallbackRow, guard=0;
+      while(!rowIsEmpty(safeRow) && guard<200){ safeRow++; guard++; }
+      place(w, safeRow, 0, "h");
+      fallbackRow = safeRow+1;
+    }
+  }
+  let minR=0,minC=0;
+  placed.forEach(p=>{minR=Math.min(minR,p.row);minC=Math.min(minC,p.col);});
+  placed.forEach(p=>{p.row-=minR;p.col-=minC;});
+
+  const startCells=[];
+  placed.forEach(p=>{
+    const key=p.row+","+p.col;
+    if(!startCells.some(s=>s.key===key)) startCells.push({key,row:p.row,col:p.col});
+  });
+  startCells.sort((a,b)=> a.row-b.row || a.col-b.col);
+  const numberMap={};
+  startCells.forEach((s,i)=>{ numberMap[s.key]=i+1; });
+  placed.forEach(p=>{ p.num = numberMap[p.row+","+p.col]; });
+
+  return placed;
+}
+function loadCh4(){
+  const words = state.attempt[4]%2===0 ? CH4_WORDS_A : CH4_WORDS_B;
+  xwPlacement = generateCrossword(words);
+  xwPlacement.forEach(p=>{ p.clue = words.find(w=>w.word===p.word).clue; });
+  renderCh4();
+}
+function renderCh4(){
+  xwCells={};
+  let maxRow=0,maxCol=0;
+  const active={}, numbers={};
+  xwPlacement.forEach(p=>{
+    for(let i=0;i<p.word.length;i++){
+      const r=p.dir==="h"?p.row:p.row+i, c=p.dir==="h"?p.col+i:p.col;
+      active[r+","+c]=p.word[i];
+      if(i===0) numbers[r+","+c]=p.num;
+      maxRow=Math.max(maxRow,r); maxCol=Math.max(maxCol,c);
+    }
+  });
+  const grid=document.getElementById("xw-grid");
+  grid.style.gridTemplateColumns=`repeat(${maxCol+1}, 32px)`;
+  grid.innerHTML="";
+  for(let r=0;r<=maxRow;r++){
+    for(let c=0;c<=maxCol;c++){
+      const key=r+","+c;
+      const cellDiv=document.createElement("div");
+      if(active[key]){
+        cellDiv.className="xw-cell active";
+        if(numbers[key]){
+          const numSpan=document.createElement("span");
+          numSpan.className="xw-num"; numSpan.textContent=numbers[key];
+          cellDiv.appendChild(numSpan);
+        }
+        const input=document.createElement("input");
+        input.maxLength=1; input.id="xw-"+key;
+        input.setAttribute("autocapitalize","off"); input.setAttribute("autocorrect","off"); input.setAttribute("spellcheck","false");
+        input.addEventListener("input", ()=>{ input.value=input.value.toUpperCase(); });
+        cellDiv.appendChild(input);
+        xwCells[key]={letter:active[key], input};
+      } else {
+        cellDiv.className="xw-cell blocked";
+      }
+      grid.appendChild(cellDiv);
+    }
+  }
+  document.getElementById("xw-clues").innerHTML = xwPlacement.map(p=>`<div><strong>${p.num}.</strong> (${p.dir==="h"?"→":"↓"}) ${p.clue}</div>`).join("");
+}
+function validateCh4(){
+  let allCorrect=true;
+  Object.values(xwCells).forEach(cell=>{
+    if(cell.input.readOnly) return;
+    const val = cell.input.value.trim().toUpperCase();
+    if(val === cell.letter){
+      cell.input.classList.add("cell-correct");
+      cell.input.classList.remove("cell-wrong");
+      cell.input.readOnly = true;
+    } else {
+      cell.input.classList.add("cell-wrong");
+      cell.input.classList.remove("cell-correct");
+      cell.input.value = "";
+      allCorrect = false;
+    }
+  });
+  state.chapterLog[4].items = xwPlacement.map(p=>{
+    let ok=true;
+    for(let i=0;i<p.word.length;i++){
+      const r=p.dir==="h"?p.row:p.row+i, c=p.dir==="h"?p.col+i:p.col;
+      const cell = xwCells[r+","+c];
+      if(!cell || cell.input.value.trim().toUpperCase()!==cell.letter) ok=false;
+    }
+    return {label:p.clue, userAnswer:"(grille)", correctAnswer:p.word, isCorrect:ok};
+  });
+  const stillWrong = Object.values(xwCells).some(cell=>!cell.input.readOnly);
+  if(!stillWrong){ chapterPassed(4, 12*PTS.ch4); return; }
+  state.attempt[4]++;
+  if(state.attempt[4] >= 2){
+    state.chapterLog[4].status = "non réussi (2 tentatives)";
+    endChapterTimer(4);
+    alert("Tu as atteint le nombre maximum de tentatives (2) pour la grille. Passage au chapitre suivant.");
+    goToChapter(5);
+    return;
+  }
+  alert("Certaines lettres sont incorrectes (tentative "+state.attempt[4]+"/2) — corrige-les et revalide.");
+}
+
+/* ============ CHAPTER 5 : TESTAMENT CORRECTION ============ */
+let ch5Segments=[];
+function loadCh5(){
+  ch5Segments = state.attempt[5]%2===0 ? CH5_A : CH5_B;
+  renderCh5();
+}
+function renderCh5(){
+  const container=document.getElementById("ch5-text");
+  container.innerHTML="";
+  let errIndex=0;
+  ch5Segments.forEach(seg=>{
+    if(seg.t !== undefined){
+      container.appendChild(document.createTextNode(seg.t));
+    } else {
+      const span=document.createElement("span");
+      span.className="wrongword";
+      span.textContent=seg.e;
+      container.appendChild(span);
+      const input=document.createElement("input");
+      input.type="text"; input.id="ch5-input-"+errIndex; input.autocomplete="off";
+      input.setAttribute("autocapitalize","off"); input.setAttribute("autocorrect","off"); input.setAttribute("spellcheck","false");
+      container.appendChild(input);
+      errIndex++;
+    }
+  });
+}
+function validateCh5(){
+  let errIndex=0;
+  const itemsLog=[];
+  ch5Segments.forEach(seg=>{
+    if(seg.e !== undefined){
+      const input=document.getElementById("ch5-input-"+errIndex);
+      const userAns = input.value.trim();
+      const isCorrect = userAns.toLowerCase()===seg.c;
+      itemsLog.push({label:"Correction de '"+seg.e+"'", userAnswer:userAns, correctAnswer:seg.c, isCorrect});
+      errIndex++;
+    }
+  });
+  state.chapterLog[5].items = itemsLog;
+  const correctCount = itemsLog.filter(it=>it.isCorrect).length;
+  if(correctCount===itemsLog.length){ chapterPassed(5, itemsLog.length*PTS.ch5); }
+  else { chapterFailed(5, loadCh5); }
+}
+
+/* ============ SUMMARY ============ */
+function finishFromSummary(){
+  state.summaryText = document.getElementById("summary-textarea").value;
+  finishGame();
+}
+
+/* ============ FINISH ============ */
+function finishGame(){
+  if(state.timerInterval) clearInterval(state.timerInterval);
+  const timeBonus = Math.min(60, Math.floor(state.totalSeconds/10));
+  state.score += timeBonus;
+  updateHud();
+  showScreen("screen-final");
+  document.getElementById("final-name").textContent = "ID : "+state.studentId+" · Classe : "+state.classe;
+  document.getElementById("final-score").textContent = state.score+" pts";
+  document.getElementById("final-rank").textContent = computeRank(state.score);
+}
+function computeRank(score){
+  if(score>=700) return "👑 Légende du Casino";
+  if(score>=550) return "💎 Grand Joueur";
+  if(score>=400) return "🃏 Joueur Confirmé";
+  if(score>=250) return "🎲 Apprenti Joueur";
+  return "🔰 Débutant";
+}
+
+/* ============ PDF EXPORT (self-contained, multi-page, colored) ============ */
+function toAscii(str){
+  return String(str)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[—–]/g,'-')
+    .replace(/['']/g,"'")
+    .replace(/[""]/g,'"')
+    .replace(/[^\x00-\x7E]/g,'');
+}
+function wrapText(text, maxChars){
+  const words = String(text).split(/\s+/).filter(Boolean);
+  const lines = [];
+  let cur = "";
+  words.forEach(w=>{
+    if((cur+" "+w).trim().length > maxChars){ lines.push(cur.trim()); cur = w; }
+    else { cur = (cur+" "+w).trim(); }
+  });
+  if(cur) lines.push(cur);
+  if(lines.length===0) lines.push("");
+  return lines;
+}
+function buildPdfBlob(lines){
+  const linesPerPage = 46;
+  const pages = [];
+  for(let i=0;i<lines.length;i+=linesPerPage){ pages.push(lines.slice(i,i+linesPerPage)); }
+  if(pages.length===0) pages.push([]);
+  const N = pages.length;
+  const fontObjNum = 3 + 2*N;
+
+  const objects = [];
+  objects.push("<< /Type /Catalog /Pages 2 0 R >>");
+  const kids = [];
+  for(let i=0;i<N;i++){ kids.push((3+i*2)+" 0 R"); }
+  objects.push(`<< /Type /Pages /Kids [${kids.join(" ")}] /Count ${N} >>`);
+  pages.forEach((pageLines,i)=>{
+    let content = "BT /F1 11 Tf 50 770 Td 14 TL\n";
+    pageLines.forEach((line,li)=>{
+      const col = line.color==="green" ? "0 0.5 0 rg" : line.color==="red" ? "0.75 0 0 rg" : "0 0 0 rg";
+      const esc = toAscii(line.text).replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)");
+      content += col+"\n";
+      content += (li===0 ? "(" : "T* (") + esc + ") Tj\n";
+    });
+    content += "ET";
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 ${fontObjNum} 0 R >> >> /Contents ${4+i*2} 0 R >>`);
+    objects.push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+  });
+  objects.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+
+  let pdf = "%PDF-1.4\n";
+  const offsets=[0];
+  objects.forEach((obj,i)=>{
+    offsets.push(pdf.length);
+    pdf += (i+1)+" 0 obj\n"+obj+"\nendobj\n";
+  });
+  const xrefStart = pdf.length;
+  pdf += "xref\n0 "+(objects.length+1)+"\n0000000000 65535 f \n";
+  for(let i=1;i<=objects.length;i++){
+    pdf += String(offsets[i]).padStart(10,"0")+" 00000 n \n";
+  }
+  pdf += "trailer\n<< /Size "+(objects.length+1)+" /Root 1 0 R >>\nstartxref\n"+xrefStart+"\n%%EOF";
+  return new Blob([pdf], {type:"application/pdf"});
+}
+function downloadPdf(){
+  const lines = [];
+  const push = (text,color)=>lines.push({text, color:color||"black"});
+  push("Le Testament de James T. Johnsson - Rapport de progression");
+  push("");
+  push("Eleve (ID) : "+(state.studentId||"-"));
+  push("Classe : "+(state.classe||"-"));
+  push("Date : "+new Date().toLocaleString("fr-FR"));
+  const m=Math.floor(state.totalSeconds/60).toString().padStart(2,"0");
+  const s=(state.totalSeconds%60).toString().padStart(2,"0");
+  push("Temps restant au moment de l'export : "+m+":"+s);
+  push("");
+  push("Score total : "+state.score+" pts / "+MAX_BASE+" pts (hors bonus de temps)");
+  push("");
+  push("A transmettre au professeur via la messagerie Ecole Directe.");
+  push("");
+
+  const labels = {1:"Chapitre 1 - La Jeunesse",2:"Chapitre 2 - Les Grands Gains",3:"Chapitre 3 - Les Pertes",4:"Chapitre 4 - Le Grand Retour",5:"Chapitre 5 - Le Testament Retrouve"};
+  [1,2,3,4,5].forEach(n=>{
+    const log = state.chapterLog[n];
+    push("=== "+labels[n]+" ["+log.status+"] ===");
+    const items = log.items || [];
+    if(items.length){
+      const correctCount = items.filter(it=>it.isCorrect).length;
+      const pct = Math.round(correctCount/items.length*100);
+      const timeTxt = log.timeSpentSec!=null ? (log.timeSpentSec+" s") : "-";
+      push("Temps passe : "+timeTxt+"   |   Reussite : "+pct+"% ("+correctCount+"/"+items.length+")");
+      items.forEach((it,i)=>{
+        const mark = it.isCorrect ? "[OK] " : "[X] ";
+        const txt = mark+(i+1)+". "+it.label+"  -> reponse : "+it.userAnswer+(it.isCorrect?"":"  (attendu : "+it.correctAnswer+")");
+        push(txt, it.isCorrect?"green":"red");
+      });
+    } else {
+      push("(chapitre non atteint)");
+    }
+    push("");
+  });
+
+  push("Resume redige par l'eleve (non corrige automatiquement) :");
+  const summary = state.summaryText && state.summaryText.trim() ? state.summaryText.trim() : "(aucun texte redige)";
+  wrapText(summary, 85).forEach(l=>push(l));
+
+  const blob = buildPdfBlob(lines);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "testament_"+(state.studentId||"eleve").toLowerCase().replace("-","")+".pdf";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+/* ============ TEACHER SPACE ============ */
+function openTeacher(){
+  showScreen("screen-teacher");
+  document.getElementById("teacher-pin-box").style.display="block";
+  document.getElementById("teacher-dashboard").style.display="none";
+  document.getElementById("teacher-pin").value="";
+  document.getElementById("pin-error").textContent="";
+}
+function closeTeacher(){ showScreen("screen-login"); }
+function checkPin(){
+  const pin=document.getElementById("teacher-pin").value.trim();
+  if(pin===TEACHER_PIN){
+    document.getElementById("teacher-pin-box").style.display="none";
+    document.getElementById("teacher-dashboard").style.display="block";
+  } else {
+    document.getElementById("pin-error").textContent="PIN incorrect.";
+  }
+}
+</script>
+</body>
+</html>
